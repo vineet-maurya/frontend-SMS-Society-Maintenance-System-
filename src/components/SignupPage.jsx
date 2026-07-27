@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ShieldCheck, Eye, EyeOff, ArrowLeft } from 'lucide-react';
-import "../allcss/Signup.css";
+import "../allcss/signup.css";
 
 export default function SignupPage({ onSignup }) {
   const navigate = useNavigate();
