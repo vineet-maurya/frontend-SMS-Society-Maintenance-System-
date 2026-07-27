@@ -1,39 +1,3 @@
-// import { BrowserRouter, Routes, Route } from "react-router-dom";
-// import LandingPage from "./components/LandingPage.jsx";
-// import Dashboard from "./components/Dashboard.jsx";
-// import Residents from "./components/Residents.jsx";
-// import Payments from "./components/Payments.jsx";
-// import Reminders from "./components/Reminders.jsx";
-// import Layout from "./components/Layout.jsx";
-// import Settings  from "./allcss/Settings";
-
-// function App() {
-//   return (
-    
-//       <Routes>
-//         <Route path="/" element={<div className="LandingPage"><LandingPage /></div>} />
-        
-//         <Route path="/layout" element={<div className="Layout"><Layout /></div>} />
-      
-//         <Route path="/dashboard" element={<div className="Dashboard"><Dashboard /></div>} />
-
-//         <Route path="/residents" element={<div className="Residents"><Residents /></div>} />
-
-//         <Route path="/payments" element={<div className="Payments"><Payments /></div>} />
-
-//         <Route path="/reminders" element={<div className="Reminders"><Reminders /></div>} />
-
-//         <Route path="/settings" element={<div className="Settings"><Settings /></div>} />
-        
-//       </Routes>
-    
-//   );
-// }
-
-// export default App;
-
-
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import axios from 'axios';
