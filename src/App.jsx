@@ -146,7 +146,7 @@ function App() {
       <div
         style={{
           minHeight: '100vh',
-          display: 'flex',
+          width: '100%',
           alignItems: 'center',
           justifyContent: 'center',
           color: 'white',
@@ -164,6 +164,7 @@ function App() {
       <div
         style={{
           minHeight: '100vh',
+          width: '100%',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
