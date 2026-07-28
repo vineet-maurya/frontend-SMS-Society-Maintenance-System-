@@ -165,8 +165,8 @@ function App() {
         style={{
           minHeight: '100vh',
           width: '100%',
-          display: 'flex',
-          flexDirection: 'column',
+          // display: 'flex',
+          // flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           gap: '12px',
