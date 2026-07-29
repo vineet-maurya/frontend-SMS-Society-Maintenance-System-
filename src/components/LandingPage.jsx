@@ -509,7 +509,8 @@ export default function LandingPage({ onOpen }) {
           free. No installation required, works instantly in your browser.
         </p>
         <div className="lp-final-cta-btns">
-          <button className="lp-btn lp-btn-green lp-btn-lg" onClick={onOpen}>
+          <button className="lp-btn lp-btn-green lp-btn-lg"
+            onClick={() => navigate('/login')}>
             Open maintenance app →
           </button>
           <a href="#workflow" className="lp-btn lp-btn-outline-green lp-btn-lg">
