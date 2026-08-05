@@ -28,6 +28,14 @@ const withIds = (docs) => (Array.isArray(docs) ? docs.map(withId) : []);
 function App() {
   const navigate = useNavigate();
 
+function RequireAuth({ children }) {
+  const token = localStorage.getItem('sms_token'); // adjust key if you named it differently
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+ return children;
+}
+
   // null = "not loaded yet" so Layout never renders with undefined settings
   const [settings, setSettings] = useState(null);
   const [residents, setResidents] = useState([]);
@@ -199,69 +207,73 @@ function App() {
   }
 
   return (
-    <Routes>
-      {/* Public landing page */}
-      <Route path="/" element={<LandingPage onOpen={handleOpenApp} />} />
+  <Routes>
+    {/* Public routes — no auth required */}
+    <Route path="/" element={<LandingPage onOpen={handleOpenApp} />} />
+    <Route path="/signup" element={<Signup />} />
+    <Route path="/login" element={<Login />} />
 
-      {/* App shell: sidebar/header/toasts persist via <Outlet /> in Layout,
-          shared across every nested child route below */}
+    {/* App shell: sidebar/header/toasts persist via <Outlet /> in Layout,
+        shared across every nested child route below. Wrapped in
+        RequireAuth so all five child pages require a valid token. */}
+    <Route
+      element={
+        <RequireAuth>
+          <Layout settings={settings} residents={residents} toasts={toasts} />
+        </RequireAuth>
+      }
+    >
       <Route
-        element={<Layout settings={settings} residents={residents} toasts={toasts} />}
-      >
-        <Route
-          path="/dashboard"
-          element={
-            <Dashboard
-              residents={residents}
-              payments={payments}
-              settings={settings}
-              setActiveTab={goToTab}
-            />
-          }
-        />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<Login />} />
+        path="/dashboard"
+        element={
+          <Dashboard
+            residents={residents}
+            payments={payments}
+            settings={settings}
+            setActiveTab={goToTab}
+          />
+        }
+      />
+      <Route
+        path="/residents"
+        element={
+          <Residents
+            residents={residents}
+            payments={payments}
+            settings={settings}
+            onAddResident={handleAddResident}
+            onDeleteResident={handleDeleteResident}
+            onMarkPaid={handleMarkPaid}
+            showToast={showToast}
+          />
+        }
+      />
+      <Route
+        path="/payments"
+        element={<Payments payments={payments} settings={settings} showToast={showToast} />}
+      />
+      <Route
+        path="/reminders"
+        element={<Reminders residents={residents} settings={settings} showToast={showToast} />}
+      />
+      <Route
+        path="/settings"
+        element={
+          <Settings
+            settings={settings}
+            onSaveSettings={handleSaveSettings}
+            onResetDatabase={handleResetDatabase}
+            residents={residents}
+            payments={payments}
+            showToast={showToast}
+          />
+        }
+      />
+    </Route>
 
-        <Route
-          path="/residents"
-          element={
-            <Residents
-              residents={residents}
-              payments={payments}
-              settings={settings}
-              onAddResident={handleAddResident}
-              onDeleteResident={handleDeleteResident}
-              onMarkPaid={handleMarkPaid}
-              showToast={showToast}
-            />
-          }
-        />
-        <Route
-          path="/payments"
-          element={<Payments payments={payments} settings={settings} showToast={showToast} />}
-        />
-        <Route
-          path="/reminders"
-          element={<Reminders residents={residents} settings={settings} showToast={showToast} />}
-        />
-        <Route
-          path="/settings"
-          element={
-            <Settings
-              settings={settings}
-              onSaveSettings={handleSaveSettings}
-              onResetDatabase={handleResetDatabase}
-              residents={residents}
-              payments={payments}
-              showToast={showToast}
-            />
-          }
-        />
-      </Route>
-
-      {/* Fallback: unknown routes go back to landing */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    {/* Fallback: unknown routes go back to landing */}
+    <Route path="*" element={<Navigate to="/" replace />} />
+  </Routes>
   );
 }
 
