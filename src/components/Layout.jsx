@@ -10,6 +10,7 @@ import {
   Check,
   AlertCircle,
   ArrowLeft,
+  LogOut,
 } from 'lucide-react';
 import "../allcss/Layout.css";
 
@@ -38,7 +39,7 @@ const PAGE_META = {
   },
 };
 
-function Layout({ settings, residents, toasts }) {
+function Layout({ settings, residents, toasts, currentUser, onLogout }) {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -97,6 +98,23 @@ function Layout({ settings, residents, toasts }) {
           <div className="sidebar-footer-subtitle">
             ₹{settings.monthlyAmount}/month • {residents.length} units
           </div>
+
+          {currentUser && (
+            <div className="sidebar-user-row">
+              <div className="sidebar-user-name" title={currentUser.email}>
+                {currentUser.fullName}
+              </div>
+            </div>
+          )}
+
+          <button
+            type="button"
+            className="logout-btn"
+            onClick={onLogout}
+          >
+            <LogOut size={16} />
+            <span>Log Out</span>
+          </button>
         </div>
       </aside>
 
