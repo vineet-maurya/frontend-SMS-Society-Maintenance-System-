@@ -8,7 +8,6 @@ export default function SignupPage({ onSignup }) {
 
   const [form, setForm] = useState({
     fullName: '',
-    societyName: '',
     email: '',
     phone: '',
     password: '',
@@ -27,7 +26,6 @@ export default function SignupPage({ onSignup }) {
   const validate = () => {
     const next = {};
     if (!form.fullName.trim()) next.fullName = 'Full name is required';
-    if (!form.societyName.trim()) next.societyName = 'Society name is required';
     if (!/^\S+@\S+\.\S+$/.test(form.email)) next.email = 'Enter a valid email address';
     if (!/^\d{10}$/.test(form.phone)) next.phone = 'Enter a valid 10 digit phone number';
     if (form.password.length < 6) next.password = 'Password must be at least 6 characters';
@@ -88,19 +86,6 @@ export default function SignupPage({ onSignup }) {
               required
             />
             {errors.fullName && <span className="auth-field-error">{errors.fullName}</span>}
-          </div>
-
-          <div className="auth-form-group">
-            <label className="auth-label">Society Name</label>
-            <input
-              type="text"
-              name="societyName"
-              className="auth-input"
-              placeholder="Green Glen Heights"
-              value={form.societyName}
-              onChange={handleChange}
-            />
-            {errors.societyName && <span className="auth-field-error">{errors.societyName}</span>}
           </div>
 
           <div className="auth-row">
