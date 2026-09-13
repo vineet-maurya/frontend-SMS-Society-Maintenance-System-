@@ -127,6 +127,24 @@ export default function Residents({ residents, payments, settings, onAddResident
     return matchesSearch && matchesFilter;
   });
 
+  // House numbers look like "22 A", "23 B-C", "91 D" — sort by the leading
+  // number first (numerically, not alphabetically, so "9" doesn't sort after
+  // "90"), then by the remaining letters as a tiebreaker.
+  const naturalCompareFlats = (a, b) => {
+    const parse = (flat) => {
+      const match = flat.trim().match(/^(\d+)\s*(.*)$/);
+      return match
+        ? { num: parseInt(match[1], 10), rest: match[2].toLowerCase() }
+        : { num: Infinity, rest: flat.toLowerCase() };
+    };
+    const pa = parse(a.flat);
+    const pb = parse(b.flat);
+    if (pa.num !== pb.num) return pa.num - pb.num;
+    return pa.rest.localeCompare(pb.rest);
+  };
+
+  filteredResidents.sort(naturalCompareFlats);
+
   // Action: Add Resident
   const handleAddSubmit = (e) => {
     e.preventDefault();
