@@ -22,18 +22,23 @@ export default function Residents({ residents, payments, settings, onAddResident
   const fileInputRef = useRef(null);
   const [importing, setImporting] = useState(false);
 
+  // Turns any header spelling into a comparable form: "H. No." -> "h no",
+  // "Mobile No" -> "mobile no", etc. — so punctuation/case never matters.
+  const normalizeKey = (key) =>
+    key.toString().toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
   // Accepts many possible header spellings so different exported sheets work
   // without the user having to rename their columns first.
   const normalizeRow = (row) => {
-    const get = (keys) => {
+    const get = (candidates) => {
       for (const key of Object.keys(row)) {
-        if (keys.includes(key.trim().toLowerCase())) return row[key];
+        if (candidates.includes(normalizeKey(key))) return row[key];
       }
       return '';
     };
     const name = get(['name', 'full name', 'resident name']);
-    const flat = get(['flat', 'house no', 'house number', 'flat number', 'flat no']);
-    const phone = get(['phone', 'mobile', 'mobile number', 'phone number', 'contact']);
+    const flat = get(['flat', 'flat no', 'flat number', 'house no', 'house number', 'h no']);
+    const phone = get(['phone', 'mobile', 'mobile no', 'mobile number', 'phone number', 'contact']);
     const statusRaw = get(['status']).toString().trim().toLowerCase();
     const status = ['paid', 'pending', 'overdue'].includes(statusRaw) ? statusRaw : 'pending';
 
@@ -45,6 +50,33 @@ export default function Residents({ residents, payments, settings, onAddResident
     };
   };
 
+  // Some exported sheets (like this one) have a title row above the real
+  // header row (e.g. "ROYAL AVENUE AUGUST-2026" before "H. No. | Name |
+  // Mobile No | ..."). Scan each sheet's rows for the one that actually
+  // looks like a header, and use that as the starting point.
+  const HEADER_HINTS = ['name', 'house', 'flat', 'mobile', 'phone', 'h no', 'h. no'];
+  const locateHeaderRow = (workbook) => {
+    for (const sheetName of workbook.SheetNames) {
+      const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {
+        header: 1,
+        defval: '',
+      });
+      const headerRowIndex = rows.findIndex((r) =>
+        r.some((cell) =>
+          HEADER_HINTS.some((hint) => cell.toString().toLowerCase().includes(hint))
+        )
+      );
+      if (headerRowIndex !== -1) return { rows, headerRowIndex };
+    }
+    // Fallback: nothing recognizable found, assume the very first sheet's
+    // first row is the header (old behaviour).
+    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {
+      header: 1,
+      defval: '',
+    });
+    return { rows, headerRowIndex: 0 };
+  };
+
   const handleExcelFile = async (e) => {
     const file = e.target.files?.[0];
     e.target.value = ''; // allow re-selecting the same file later
@@ -54,15 +86,27 @@ export default function Residents({ residents, payments, settings, onAddResident
     try {
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data, { type: 'array' });
-      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
+      const { rows, headerRowIndex } = locateHeaderRow(workbook);
 
-      if (rows.length === 0) {
-        showToast('The uploaded sheet has no rows', 'error');
+      const headers = rows[headerRowIndex].map((h) => h.toString());
+      const dataRows = rows
+        .slice(headerRowIndex + 1)
+        .filter((r) => r.some((cell) => cell !== ''));
+
+      if (dataRows.length === 0) {
+        showToast('The uploaded sheet has no data rows', 'error');
         return;
       }
 
-      const parsedRows = rows.map(normalizeRow);
+      const rowObjects = dataRows.map((r) => {
+        const obj = {};
+        headers.forEach((h, i) => {
+          obj[h] = r[i];
+        });
+        return obj;
+      });
+
+      const parsedRows = rowObjects.map(normalizeRow);
       await onBulkImportResidents(parsedRows);
     } catch (err) {
       console.error('Excel import failed:', err);
