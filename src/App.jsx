@@ -201,6 +201,31 @@ function App() {
     }
   };
 
+  // Bulk import residents parsed client-side from an uploaded Excel/CSV
+  // sheet. Returns the backend summary so the UI can show what happened.
+  const handleBulkImportResidents = async (parsedRows) => {
+    try {
+      const res = await api.post("/residents/bulk-import", {
+        residents: parsedRows,
+      });
+      await refreshData();
+      const { added, skippedDuplicates, errors } = res.data.data;
+      let message = `Imported ${added} resident(s)`;
+      if (skippedDuplicates.length) {
+        message += `, skipped ${skippedDuplicates.length} duplicate flat(s)`;
+      }
+      if (errors.length) {
+        message += `, ${errors.length} row(s) had errors`;
+      }
+      showToast(message, errors.length ? "info" : "success");
+    } catch (err) {
+      showToast(
+        err.response?.data?.message || "Failed to import Excel sheet",
+        "error",
+      );
+    }
+  };
+
   const handleDeleteResident = async (id) => {
     try {
       await api.delete(`/residents/${id}`);
@@ -266,7 +291,7 @@ function App() {
           fontWeight: 600,
         }}
       >
-        Loading AURA-SMS...
+        Loading ROYAL AVENUE...
       </div>
     );
   }
@@ -342,6 +367,7 @@ function App() {
                   payments={payments}
                   settings={settings}
                   onAddResident={handleAddResident}
+                  onBulkImportResidents={handleBulkImportResidents}
                   onDeleteResident={handleDeleteResident}
                   onMarkPaid={handleMarkPaid}
                   showToast={showToast}

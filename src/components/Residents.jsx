@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Search, Plus, Trash2, CheckCircle, Receipt, Share2, X, Check, Copy, QrCode, AlertCircle } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Search, Plus, Trash2, CheckCircle, Receipt, Share2, X, Check, Copy, QrCode, AlertCircle, Upload } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import "../allcss/Residents.css"
-export default function Residents({ residents, payments, settings, onAddResident, onDeleteResident, onMarkPaid, showToast }) {
+export default function Residents({ residents, payments, settings, onAddResident, onBulkImportResidents, onDeleteResident, onMarkPaid, showToast }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -16,6 +17,60 @@ export default function Residents({ residents, payments, settings, onAddResident
   const [newResident, setNewResident] = useState({ name: '', flat: '', phone: '', status: 'pending' });
   const [paymentMethod, setPaymentMethod] = useState('UPI');
   const [txnId, setTxnId] = useState('');
+
+  // Excel Upload
+  const fileInputRef = useRef(null);
+  const [importing, setImporting] = useState(false);
+
+  // Accepts many possible header spellings so different exported sheets work
+  // without the user having to rename their columns first.
+  const normalizeRow = (row) => {
+    const get = (keys) => {
+      for (const key of Object.keys(row)) {
+        if (keys.includes(key.trim().toLowerCase())) return row[key];
+      }
+      return '';
+    };
+    const name = get(['name', 'full name', 'resident name']);
+    const flat = get(['flat', 'house no', 'house number', 'flat number', 'flat no']);
+    const phone = get(['phone', 'mobile', 'mobile number', 'phone number', 'contact']);
+    const statusRaw = get(['status']).toString().trim().toLowerCase();
+    const status = ['paid', 'pending', 'overdue'].includes(statusRaw) ? statusRaw : 'pending';
+
+    return {
+      name: name.toString().trim(),
+      flat: flat.toString().trim(),
+      phone: phone.toString().replace(/\D/g, '').trim(),
+      status,
+    };
+  };
+
+  const handleExcelFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // allow re-selecting the same file later
+    if (!file) return;
+
+    setImporting(true);
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, { type: 'array' });
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
+
+      if (rows.length === 0) {
+        showToast('The uploaded sheet has no rows', 'error');
+        return;
+      }
+
+      const parsedRows = rows.map(normalizeRow);
+      await onBulkImportResidents(parsedRows);
+    } catch (err) {
+      console.error('Excel import failed:', err);
+      showToast('Could not read that file. Please upload a valid .xlsx/.csv sheet.', 'error');
+    } finally {
+      setImporting(false);
+    }
+  };
 
   // Search & Filter Logic
   const filteredResidents = residents.filter(resident => {
@@ -122,6 +177,21 @@ export default function Residents({ residents, payments, settings, onAddResident
               </button>
             ))}
           </div>
+
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept=".xlsx,.xls,.csv"
+            style={{ display: 'none' }}
+            onChange={handleExcelFile}
+          />
+          <button
+            className="btn btn-secondary"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={importing}
+          >
+            <Upload size={18} /> {importing ? 'Importing...' : 'Upload Excel Sheet'}
+          </button>
 
           <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
             <Plus size={18} /> Add Resident
