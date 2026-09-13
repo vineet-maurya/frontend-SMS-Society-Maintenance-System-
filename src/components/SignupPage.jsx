@@ -63,7 +63,7 @@ export default function SignupPage({ onSignup }) {
             <ShieldCheck size={22} />
           </div>
           <div>
-            <div className="auth-logo-text">AURA-SMS</div>
+            <div className="auth-logo-text">ROYALE AVENUE</div>
             <div className="auth-logo-sub">Society Manager</div>
           </div>
         </div>

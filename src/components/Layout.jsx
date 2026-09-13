@@ -60,7 +60,7 @@ function Layout({ settings, residents, toasts, currentUser, onLogout }) {
             <ShieldCheck size={22} />
           </div>
           <div>
-            <div className="logo-text">AURA-SMS</div>
+            <div className="logo-text">ROYALE AVENUE</div>
             <div className="logo-sub">Society Manager</div>
           </div>
         </div>

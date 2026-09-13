@@ -193,7 +193,7 @@ export default function LandingPage({ onOpen }) {
           <div className="lp-nav-logo-icon">
             <ShieldCheck size={18} />
           </div>
-          AURA-SMS
+          ROYALE AVENUE
         </div>
 
         <div className="lp-nav-links">
@@ -453,7 +453,7 @@ export default function LandingPage({ onOpen }) {
             </div>
             <div className="lp-compare-card lp-compare-new">
               <div className="lp-compare-heading">
-                <Check size={18} /> With AURA-SMS
+                <Check size={18} /> With Royale Avenue
               </div>
               <div className="lp-compare-list">
                 {compareNew.map((item, i) => (
@@ -528,7 +528,7 @@ export default function LandingPage({ onOpen }) {
       >
         <div className="lp-footer">
           <div className="lp-footer-left">
-            <strong style={{ color: "#e5e7eb" }}>AURA-SMS</strong> — Society
+            <strong style={{ color: "#e5e7eb" }}>ROYALE AVENUE</strong> — Society
             Maintenance Manager &nbsp;·&nbsp; © 2026 All rights reserved.
           </div>
           <div className="lp-footer-links">

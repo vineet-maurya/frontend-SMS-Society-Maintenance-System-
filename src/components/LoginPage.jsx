@@ -54,7 +54,7 @@ export default function LoginPage({ onLogin }) {
             <ShieldCheck size={22} />
           </div>
           <div>
-            <div className="auth-logo-text">AURA-SMS</div>
+            <div className="auth-logo-text">ROYAL AVENUE</div>
             <div className="auth-logo-sub">Society Manager</div>
           </div>
         </div>
