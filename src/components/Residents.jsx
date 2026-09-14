@@ -460,7 +460,7 @@ export default function Residents({ residents, payments, settings, onAddResident
             <form onSubmit={handleMarkPaidSubmit}>
               <div className="form-group">
                 <label className="form-label">Payment Method</label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
                   <button
                     type="button"
                     className={`btn ${paymentMethod === 'UPI' ? 'btn-primary' : 'btn-secondary'}`}
@@ -481,15 +481,27 @@ export default function Residents({ residents, payments, settings, onAddResident
                   >
                     Cash
                   </button>
+                  <button
+                    type="button"
+                    className={`btn ${paymentMethod === 'Cheque' ? 'btn-primary' : 'btn-secondary'}`}
+                    onClick={() => {
+                      setPaymentMethod('Cheque');
+                      setTxnId('');
+                    }}
+                  >
+                    Cheque
+                  </button>
                 </div>
               </div>
 
               <div className="form-group">
-                <label className="form-label">Transaction ID / Reference Number</label>
+                <label className="form-label">
+                  {paymentMethod === 'Cheque' ? 'Cheque No.' : 'Transaction ID / Reference Number'}
+                </label>
                 <input 
                   type="text" 
                   className="form-control" 
-                  placeholder="Enter UPI reference or receipt ID" 
+                  placeholder={paymentMethod === 'Cheque' ? 'Enter cheque number' : 'Enter UPI reference or receipt ID'} 
                   value={txnId}
                   onChange={(e) => setTxnId(e.target.value)}
                   required
@@ -549,7 +561,9 @@ export default function Residents({ residents, payments, settings, onAddResident
                   <span className="receipt-value">{getReceiptDetails()?.method}</span>
                 </div>
                 <div className="receipt-row" style={{ borderBottom: '1px dotted #9ca3af', paddingBottom: '8px' }}>
-                  <span className="receipt-label">TXN REF ID:</span>
+                  <span className="receipt-label">
+                    {getReceiptDetails()?.method === 'Cheque' ? 'CHEQUE NO:' : 'TXN REF ID:'}
+                  </span>
                   <span className="receipt-value" style={{ fontSize: '11px' }}>{getReceiptDetails()?.txnId}</span>
                 </div>
                 
