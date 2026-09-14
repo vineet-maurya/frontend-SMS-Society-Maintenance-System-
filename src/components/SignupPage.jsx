@@ -8,6 +8,7 @@ export default function SignupPage({ onSignup }) {
 
   const [form, setForm] = useState({
     fullName: '',
+    houseNo: '',
     email: '',
     phone: '',
     password: '',
@@ -26,6 +27,7 @@ export default function SignupPage({ onSignup }) {
   const validate = () => {
     const next = {};
     if (!form.fullName.trim()) next.fullName = 'Full name is required';
+    if (!form.houseNo.trim()) next.houseNo = 'House number is required';
     if (!/^\S+@\S+\.\S+$/.test(form.email)) next.email = 'Enter a valid email address';
     if (!/^\d{10}$/.test(form.phone)) next.phone = 'Enter a valid 10 digit phone number';
     if (form.password.length < 6) next.password = 'Password must be at least 6 characters';
@@ -63,7 +65,7 @@ export default function SignupPage({ onSignup }) {
             <ShieldCheck size={22} />
           </div>
           <div>
-            <div className="auth-logo-text">ROYALE AVENUE</div>
+            <div className="auth-logo-text">ROYAL AVENUE</div>
             <div className="auth-logo-sub">Society Manager</div>
           </div>
         </div>
@@ -86,6 +88,20 @@ export default function SignupPage({ onSignup }) {
               required
             />
             {errors.fullName && <span className="auth-field-error">{errors.fullName}</span>}
+          </div>
+
+          <div className="auth-form-group">
+            <label className="auth-label">House No.</label>
+            <input
+              type="text"
+              name="houseNo"
+              className="auth-input"
+              placeholder="23-B"
+              value={form.houseNo}
+              onChange={handleChange}
+              required
+            />
+            {errors.houseNo && <span className="auth-field-error">{errors.houseNo}</span>}
           </div>
 
           <div className="auth-row">
