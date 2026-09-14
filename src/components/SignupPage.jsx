@@ -96,7 +96,7 @@ export default function SignupPage({ onSignup }) {
               type="text"
               name="houseNo"
               className="auth-input"
-              placeholder="23-B"
+              placeholder="Example: 23-B"
               value={form.houseNo}
               onChange={handleChange}
               required
