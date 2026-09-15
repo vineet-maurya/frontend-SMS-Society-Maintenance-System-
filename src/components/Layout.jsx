@@ -156,4 +156,5 @@ function Layout({ settings, residents, toasts, currentUser, onLogout }) {
   );
 }
 
+
 export default Layout;
