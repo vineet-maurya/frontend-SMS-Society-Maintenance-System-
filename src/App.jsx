@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate, Outlet, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 import LandingPage from "./components/LandingPage.jsx";
@@ -145,7 +145,9 @@ function App() {
     setToken(newToken);
     setCurrentUser(user);
     showToast(`Welcome, ${user.fullName}!`, "success");
-    navigate("/dashboard");
+    // Normal users only have access to the Residents page — admins land on
+    // the Dashboard. See RequireAdmin below for the route-level enforcement.
+    navigate(user.role === "admin" ? "/dashboard" : "/residents");
   };
 
   const handleLogin = async (formData) => {
@@ -154,7 +156,7 @@ function App() {
     setToken(newToken);
     setCurrentUser(user);
     showToast(`Welcome back, ${user.fullName}!`, "success");
-    navigate("/dashboard");
+    navigate(user.role === "admin" ? "/dashboard" : "/residents");
   };
 
   const handleLogout = () => {
@@ -167,7 +169,8 @@ function App() {
   };
 
   const handleOpenApp = () => {
-    navigate(currentUser ? "/dashboard" : "/login");
+    if (!currentUser) return navigate("/login");
+    navigate(currentUser.role === "admin" ? "/dashboard" : "/residents");
   };
 
   const handleSaveSettings = async (newSettings) => {
@@ -269,11 +272,22 @@ function App() {
   // setActiveTab('residents') — now navigates to the matching route.
   const goToTab = (tab) => navigate(`/${tab}`);
 
-  // ---- Route guard ----
+  // ---- Route guards ----
   function RequireAuth({ children }) {
     if (!authChecked) return null; // don't flash a redirect during initial token check
     if (!currentUser) return <Navigate to="/login" replace />;
     return children;
+  }
+
+  // Role gate for admin-only pages (Dashboard, Payments Ledger, Reminders,
+  // Settings). Sits *inside* RequireAuth, so currentUser is guaranteed to
+  // exist by the time this runs. Used as a layout route (renders <Outlet/>),
+  // so it protects the actual <Route> match itself — a normal user typing
+  // an admin URL directly is redirected here, not just hidden from the nav.
+  const isAdmin = currentUser?.role === "admin";
+  function RequireAdmin() {
+    if (!isAdmin) return <Navigate to="/residents" replace />;
+    return <Outlet />;
   }
 
   // ---- Initial auth check (runs once on app load) ----
@@ -348,17 +362,7 @@ function App() {
           />
         ) : (
           <>
-            <Route
-              path="/dashboard"
-              element={
-                <Dashboard
-                  residents={residents}
-                  payments={payments}
-                  settings={settings}
-                  setActiveTab={goToTab}
-                />
-              }
-            />
+            {/* Available to every logged-in user (normal + admin) */}
             <Route
               path="/residents"
               element={
@@ -374,39 +378,56 @@ function App() {
                 />
               }
             />
-            <Route
-              path="/payments"
-              element={
-                <Payments
-                  payments={payments}
-                  settings={settings}
-                  showToast={showToast}
-                />
-              }
-            />
-            <Route
-              path="/reminders"
-              element={
-                <Reminders
-                  residents={residents}
-                  settings={settings}
-                  showToast={showToast}
-                />
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                <Settings
-                  settings={settings}
-                  onSaveSettings={handleSaveSettings}
-                  onResetDatabase={handleResetDatabase}
-                  residents={residents}
-                  payments={payments}
-                  showToast={showToast}
-                />
-              }
-            />
+
+            {/* Admin-only pages. RequireAdmin redirects a normal user to
+                /residents instead of rendering any of these routes, so
+                this protects the routes themselves — not just the nav. */}
+            <Route element={<RequireAdmin />}>
+              <Route
+                path="/dashboard"
+                element={
+                  <Dashboard
+                    residents={residents}
+                    payments={payments}
+                    settings={settings}
+                    setActiveTab={goToTab}
+                  />
+                }
+              />
+              <Route
+                path="/payments"
+                element={
+                  <Payments
+                    payments={payments}
+                    settings={settings}
+                    showToast={showToast}
+                  />
+                }
+              />
+              <Route
+                path="/reminders"
+                element={
+                  <Reminders
+                    residents={residents}
+                    settings={settings}
+                    showToast={showToast}
+                  />
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <Settings
+                    settings={settings}
+                    onSaveSettings={handleSaveSettings}
+                    onResetDatabase={handleResetDatabase}
+                    residents={residents}
+                    payments={payments}
+                    showToast={showToast}
+                  />
+                }
+              />
+            </Route>
           </>
         )}
       </Route>

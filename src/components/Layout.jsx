@@ -42,6 +42,7 @@ const PAGE_META = {
 function Layout({ settings, residents, toasts, currentUser, onLogout }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const isAdmin = currentUser?.role === 'admin';
 
   const meta = PAGE_META[location.pathname] || {
     title: 'Society Maintenance System',
@@ -66,31 +67,43 @@ function Layout({ settings, residents, toasts, currentUser, onLogout }) {
         </div>
 
         <ul className="nav-links">
-          <li>
-            <NavLink to="/dashboard" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-              <LayoutDashboard size={18} /> <span>Dashboard</span>
-            </NavLink>
-          </li>
+          {/* Admin-only nav items. Hiding these is just a UX nicety —
+              the actual protection lives in the route guard (App.jsx's
+              RequireAdmin), which is what stops a normal user who types
+              one of these URLs directly. */}
+          {isAdmin && (
+            <li>
+              <NavLink to="/dashboard" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <LayoutDashboard size={18} /> <span>Dashboard</span>
+              </NavLink>
+            </li>
+          )}
           <li>
             <NavLink to="/residents" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
               <Users size={18} /> <span>Residents</span>
             </NavLink>
           </li>
-          <li>
-            <NavLink to="/payments" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-              <Receipt size={18} /> <span>Payments Ledger</span>
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/reminders" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-              <Bell size={18} /> <span>Reminders</span>
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/settings" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-              <SettingsIcon size={18} /> <span>Settings</span>
-            </NavLink>
-          </li>
+          {isAdmin && (
+            <li>
+              <NavLink to="/payments" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <Receipt size={18} /> <span>Payments Ledger</span>
+              </NavLink>
+            </li>
+          )}
+          {isAdmin && (
+            <li>
+              <NavLink to="/reminders" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <Bell size={18} /> <span>Reminders</span>
+              </NavLink>
+            </li>
+          )}
+          {isAdmin && (
+            <li>
+              <NavLink to="/settings" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <SettingsIcon size={18} /> <span>Settings</span>
+              </NavLink>
+            </li>
+          )}
         </ul>
 
         <div className="sidebar-footer">
