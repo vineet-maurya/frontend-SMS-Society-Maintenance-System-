@@ -265,6 +265,16 @@ function App() {
     }
   };
 
+  // Used by the Residents page's receipt modal. Admins already have the
+  // full payments array in memory (from refreshData), so they don't need
+  // this. Normal users don't — the Payment Ledger (GET /payments) is
+  // admin-only — so their receipt view fetches just the one resident's
+  // history from the resident-scoped endpoint instead.
+  const fetchResidentPayments = async (residentId) => {
+    const res = await api.get(`/residents/${residentId}/payments`);
+    return withIds(res.data.data);
+  };
+
   const handleResetDatabase = async () => {
     try {
       await api.post("/settings/reset");
@@ -380,10 +390,12 @@ function App() {
                   residents={residents}
                   payments={payments}
                   settings={settings}
+                  isAdmin={isAdmin}
                   onAddResident={handleAddResident}
                   onBulkImportResidents={handleBulkImportResidents}
                   onDeleteResident={handleDeleteResident}
                   onMarkPaid={handleMarkPaid}
+                  onFetchResidentPayments={fetchResidentPayments}
                   showToast={showToast}
                 />
               }

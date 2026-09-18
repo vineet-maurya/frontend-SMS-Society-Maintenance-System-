@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Search, Plus, Trash2, CheckCircle, Receipt, Share2, X, Check, Copy, QrCode, AlertCircle, Upload } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import "../allcss/Residents.css"
-export default function Residents({ residents, payments, settings, onAddResident, onBulkImportResidents, onDeleteResident, onMarkPaid, showToast }) {
+export default function Residents({ residents, payments, settings, isAdmin, onAddResident, onBulkImportResidents, onDeleteResident, onMarkPaid, onFetchResidentPayments, showToast }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -21,6 +21,12 @@ export default function Residents({ residents, payments, settings, onAddResident
   // Excel Upload
   const fileInputRef = useRef(null);
   const [importing, setImporting] = useState(false);
+
+  // Admins already have every resident's payment history in memory (the
+  // `payments` prop, from the admin-only Payment Ledger). Normal users
+  // don't have access to that, so when they open a receipt we fetch just
+  // that one resident's history from the resident-scoped endpoint instead.
+  const [fetchedPayments, setFetchedPayments] = useState([]);
 
   // Turns any header spelling into a comparable form: "H. No." -> "h no",
   // "Mobile No" -> "mobile no", etc. — so punctuation/case never matters.
@@ -172,15 +178,26 @@ export default function Residents({ residents, payments, settings, onAddResident
   };
 
   // Action: View Receipt
-  const openReceipt = (resident) => {
+  const openReceipt = async (resident) => {
     setSelectedResident(resident);
     setShowReceiptModal(true);
+    if (!isAdmin && onFetchResidentPayments) {
+      try {
+        const data = await onFetchResidentPayments(resident.id);
+        setFetchedPayments(data);
+      } catch (err) {
+        setFetchedPayments([]);
+      }
+    }
   };
 
   const getReceiptDetails = () => {
     if (!selectedResident) return null;
+    // Admins already have the full ledger in `payments`; normal users use
+    // the resident-scoped history fetched by openReceipt above.
+    const paymentSource = isAdmin ? payments : fetchedPayments;
     // Find the latest payment for this month (or the last payment)
-    const residentPayments = payments.filter(p => p.residentId === selectedResident.id);
+    const residentPayments = paymentSource.filter(p => p.residentId === selectedResident.id);
     const latestPayment = residentPayments.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
     
     return {
