@@ -107,9 +107,9 @@ function Layout({ settings, residents, toasts, currentUser, onLogout }) {
         </ul>
 
         <div className="sidebar-footer">
-          <div className="sidebar-footer-title">{settings.societyName}</div>
+          <div className="sidebar-footer-title">{settings?.societyName || 'Society Maintenance System'}</div>
           <div className="sidebar-footer-subtitle">
-            ₹{settings.monthlyAmount}/month • {residents.length} units
+            ₹{settings?.monthlyAmount ?? 0}/month • {residents.length} units
           </div>
 
           {currentUser && (
