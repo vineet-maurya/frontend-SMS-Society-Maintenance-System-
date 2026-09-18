@@ -103,16 +103,26 @@ function App() {
   // Single source of truth: re-fetch everything from the API. Called after
   // login and after every mutation, so the UI is always in sync with what's
   // actually stored in MongoDB Atlas.
+  //
+  // /payments is admin-only on the backend now (Payment Ledger data), so a
+  // normal user's token would get a 403 there. Skip that call for them
+  // entirely rather than letting Promise.all reject — otherwise the whole
+  // app shell would show a load error, including their allowed /residents
+  // page. Their `payments` state just stays empty, which only affects the
+  // per-resident receipt view on the Residents page.
   const refreshData = useCallback(async () => {
+    const isAdminUser = currentUser?.role === "admin";
     const [settingsRes, residentsRes, paymentsRes] = await Promise.all([
       api.get("/settings"),
       api.get("/residents"),
-      api.get("/payments"),
+      isAdminUser
+        ? api.get("/payments")
+        : Promise.resolve({ data: { data: [] } }),
     ]);
     setSettings(settingsRes.data.data);
     setResidents(withIds(residentsRes.data.data));
     setPayments(withIds(paymentsRes.data.data));
-  }, []);
+  }, [currentUser]);
 
   // Only fetch app data once we actually know who's logged in — calling
   // these endpoints before login just throws 401s, since they're all
