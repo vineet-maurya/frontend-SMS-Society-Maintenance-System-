@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ShieldCheck, Users, UserCog, Check, ArrowLeft } from 'lucide-react';
+import { ShieldCheck, Users, UserCog, ChevronRight, ArrowLeft } from 'lucide-react';
 import "../allcss/signup.css";
 import "../allcss/roleselect.css";
 
-// Standalone by design: this page doesn't yet feed into the Signup form
-// (that wiring is a separate step). If a parent supplies onContinue, it's
-// called with the chosen role; otherwise this falls back to navigating to
-// /signup with the role in router state, same prop pattern as
-// SignupPage's onSignup / LoginPage's onLogin.
+// Standalone by design: this page doesn't yet feed into the Signup form's
+// own submission logic (auth.controller.js still decides the real role
+// server-side). If a parent supplies onContinue, it's called with the
+// clicked role; otherwise this falls back to navigating straight to the
+// existing Signup form (/signup/details) with the role in router state —
+// same prop pattern as SignupPage's onSignup / LoginPage's onLogin.
 const ROLE_OPTIONS = [
   {
     value: 'user',
@@ -26,17 +27,12 @@ const ROLE_OPTIONS = [
 
 export default function RoleSelectPage({ onContinue }) {
   const navigate = useNavigate();
-  const [selectedRole, setSelectedRole] = useState(null);
 
-  const handleContinue = () => {
-    if (!selectedRole) return;
+  const handleSelect = (role) => {
     if (onContinue) {
-      onContinue(selectedRole);
+      onContinue(role);
     } else {
-      // /signup is now this page itself, so the standalone fallback (used
-      // only if a parent doesn't wire onContinue) points at the actual
-      // Signup form's route instead.
-      navigate('/signup/details', { state: { role: selectedRole } });
+      navigate('/signup/details', { state: { role } });
     }
   };
 
@@ -63,14 +59,12 @@ export default function RoleSelectPage({ onContinue }) {
         <div className="role-options">
           {ROLE_OPTIONS.map((option) => {
             const Icon = option.icon;
-            const isSelected = selectedRole === option.value;
             return (
               <button
                 type="button"
                 key={option.value}
-                className={`role-option${isSelected ? ' role-option-selected' : ''}`}
-                onClick={() => setSelectedRole(option.value)}
-                aria-pressed={isSelected}
+                className="role-option"
+                onClick={() => handleSelect(option.value)}
               >
                 <div className="role-option-icon">
                   <Icon size={20} />
@@ -79,22 +73,11 @@ export default function RoleSelectPage({ onContinue }) {
                   <div className="role-option-title">{option.title}</div>
                   <div className="role-option-desc">{option.description}</div>
                 </div>
-                <div className="role-option-check">
-                  {isSelected && <Check size={13} strokeWidth={3} />}
-                </div>
+                <ChevronRight size={18} className="role-option-arrow" />
               </button>
             );
           })}
         </div>
-
-        <button
-          type="button"
-          className="auth-submit-btn role-select-continue-btn"
-          disabled={!selectedRole}
-          onClick={handleContinue}
-        >
-          Continue
-        </button>
 
         <p className="auth-switch-text">
           Already have an account? <Link to="/login">Log in</Link>
