@@ -1,10 +1,18 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { ShieldCheck, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import "../allcss/signup.css";
 
 export default function SignupPage({ onSignup }) {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Which account type was picked on the role-selection page
+  // (Resident User -> "user", Admin User -> "admin"), passed via router
+  // state from RoleSelectPage. Anything missing or unrecognized (e.g. this
+  // page was opened directly, without going through role selection) safely
+  // defaults to the least-privileged role.
+  const selectedRole = location.state?.role === 'admin' ? 'admin' : 'user';
 
   const [form, setForm] = useState({
     fullName: '',
@@ -43,7 +51,10 @@ export default function SignupPage({ onSignup }) {
     setSubmitting(true);
     try {
       if (onSignup) {
-        await onSignup(form);
+        // Send the selected role alongside the existing form fields — not
+        // a new field the user fills in, just metadata carried over from
+        // the role-selection page onto this same, unmodified submission.
+        await onSignup({ ...form, role: selectedRole });
       }
       navigate('/dashboard');
     } catch (err) {
