@@ -52,10 +52,6 @@ function Layout({ settings, residents, toasts, currentUser, onLogout }) {
   return (
     <div className="app-container">
       <aside className="sidebar">
-        <div className="back-to-home" onClick={() => navigate('/')}>
-          <ArrowLeft size={14} /> Back to Home
-        </div>
-
         <div className="logo-container">
           <div className="logo-icon">
             <ShieldCheck size={22} />
