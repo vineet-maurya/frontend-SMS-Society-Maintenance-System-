@@ -33,7 +33,10 @@ export default function RoleSelectPage({ onContinue }) {
     if (onContinue) {
       onContinue(selectedRole);
     } else {
-      navigate('/signup', { state: { role: selectedRole } });
+      // /signup is now this page itself, so the standalone fallback (used
+      // only if a parent doesn't wire onContinue) points at the actual
+      // Signup form's route instead.
+      navigate('/signup/details', { state: { role: selectedRole } });
     }
   };
 

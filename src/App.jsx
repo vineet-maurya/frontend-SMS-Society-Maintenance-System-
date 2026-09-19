@@ -11,6 +11,7 @@ import Reminders from "./components/Reminders.jsx";
 import Settings from "./components/Settings.jsx";
 import Signup from "./components/SignupPage.jsx";
 import Login from "./components/LoginPage.jsx";
+import RoleSelect from "./components/RoleSelectPage.jsx";
 
 // Points at the Express/MongoDB Atlas backend.
 // Set VITE_API_URL in a .env file at the frontend root to override in production.
@@ -149,6 +150,14 @@ function App() {
   }, [currentUser, refreshData]);
 
   // ---- Auth actions ----
+  // Signup flow: /signup -> role selection -> /signup/details (the
+  // existing SignupPage, unchanged). This just decides where "Continue"
+  // on the role-selection page goes; it doesn't yet feed the chosen role
+  // into the actual account-creation request.
+  const handleRoleSelected = (role) => {
+    navigate("/signup/details", { state: { role } });
+  };
+
   const handleSignup = async (formData) => {
     const res = await api.post("/auth/signup", formData);
     const { user, token: newToken } = res.data.data;
@@ -334,7 +343,11 @@ function App() {
     <Routes>
       {/* Public routes — no auth required */}
       <Route path="/" element={<LandingPage onOpen={handleOpenApp} />} />
-      <Route path="/signup" element={<Signup onSignup={handleSignup} />} />
+      {/* Signup flow: /signup is now the role-selection step; the existing
+          Signup form (unchanged) moved to /signup/details, reached after
+          picking Resident User or Admin User. */}
+      <Route path="/signup" element={<RoleSelect onContinue={handleRoleSelected} />} />
+      <Route path="/signup/details" element={<Signup onSignup={handleSignup} />} />
       <Route path="/login" element={<Login onLogin={handleLogin} />} />
 
       {/* App shell: sidebar/header/toasts persist via <Outlet /> in Layout,
