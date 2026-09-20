@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Routes, Route, Navigate, Outlet, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate, Outlet, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 
 import LandingPage from "./components/LandingPage.jsx";
@@ -319,6 +319,21 @@ function App() {
     return <Outlet />;
   }
 
+  // Guards the existing Signup form (/signup/details): it should only be
+  // reachable by coming from the role-selection page (/signup), which
+  // passes the chosen role via router state. If someone opens
+  // /signup/details directly — typed URL, bookmark, page refresh (which
+  // drops in-memory router state) — there's no role in state, so send them
+  // back to role selection instead of letting the form render roleless.
+  function RequireSelectedRole() {
+    const location = useLocation();
+    const role = location.state?.role;
+    if (role !== "user" && role !== "admin") {
+      return <Navigate to="/signup" replace />;
+    }
+    return <Outlet />;
+  }
+
   // ---- Initial auth check (runs once on app load) ----
   if (!authChecked) {
     return (
@@ -347,7 +362,9 @@ function App() {
           Signup form (unchanged) moved to /signup/details, reached after
           picking Resident User or Admin User. */}
       <Route path="/signup" element={<RoleSelect onContinue={handleRoleSelected} />} />
-      <Route path="/signup/details" element={<Signup onSignup={handleSignup} />} />
+      <Route element={<RequireSelectedRole />}>
+        <Route path="/signup/details" element={<Signup onSignup={handleSignup} />} />
+      </Route>
       <Route path="/login" element={<Login onLogin={handleLogin} />} />
 
       {/* App shell: sidebar/header/toasts persist via <Outlet /> in Layout,
