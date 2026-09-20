@@ -65,6 +65,7 @@ export default function RoleSelectPage({ onContinue }) {
                 key={option.value}
                 className="role-option"
                 onClick={() => handleSelect(option.value)}
+                aria-label={`${option.title} — ${option.description}`}
               >
                 <div className="role-option-icon">
                   <Icon size={20} />
@@ -73,7 +74,7 @@ export default function RoleSelectPage({ onContinue }) {
                   <div className="role-option-title">{option.title}</div>
                   <div className="role-option-desc">{option.description}</div>
                 </div>
-                <ChevronRight size={18} className="role-option-arrow" />
+                <ChevronRight size={18} className="role-option-arrow" aria-hidden="true" />
               </button>
             );
           })}
